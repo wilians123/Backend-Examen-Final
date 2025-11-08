@@ -49,6 +49,15 @@
             <artifactId>httpclient5</artifactId>
             <version>${httpclient.version}</version>
         </dependency>
+        
+        
+<!-- Apache HttpCore (necesaria para EntityUtils) -->
+<dependency>
+    <groupId>org.apache.httpcomponents.core5</groupId>
+    <artifactId>httpcore5</artifactId>
+    <version>${httpclient.version}</version>
+</dependency>
+
 
         <!-- SLF4J para logging -->
         <dependency>
