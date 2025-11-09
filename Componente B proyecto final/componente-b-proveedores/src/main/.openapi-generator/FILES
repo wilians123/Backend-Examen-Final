@@ -1,0 +1,16 @@
+README.md
+java/com/logistica/proveedores/model/CalcularTotalFactura200Response.java
+java/com/logistica/proveedores/model/ErrorResponse.java
+java/com/logistica/proveedores/model/Factura.java
+java/com/logistica/proveedores/model/FacturaInput.java
+java/com/logistica/proveedores/model/ItemFactura.java
+java/com/logistica/proveedores/model/ItemFacturaInput.java
+java/com/logistica/proveedores/model/ListarFacturas200Response.java
+java/com/logistica/proveedores/model/ListarProveedores200Response.java
+java/com/logistica/proveedores/model/PagarFacturaRequest.java
+java/com/logistica/proveedores/model/Proveedor.java
+java/com/logistica/proveedores/model/ProveedorInput.java
+java/com/logistica/proveedores/spec/ApiUtil.java
+java/com/logistica/proveedores/spec/FacturasApi.java
+java/com/logistica/proveedores/spec/ProveedoresApi.java
+pom.xml

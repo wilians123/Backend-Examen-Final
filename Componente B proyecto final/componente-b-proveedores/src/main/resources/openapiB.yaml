@@ -1,0 +1,766 @@
+openapi: 3.0.3
+info:
+  title: API de Gestión de Proveedores y Facturas
+  description: |
+    API REST para el componente B del sistema de logística.
+    Maneja la administración de proveedores y sus facturas utilizando PostgreSQL.
+  version: 1.0.0
+  contact:
+    name: Equipo de Desarrollo
+    email: soporte@logistica.com
+
+servers:
+  - url: http://localhost:8081/api/v1
+    description: Servidor de desarrollo local
+
+tags:
+  - name: Proveedores
+    description: Operaciones relacionadas con proveedores
+  - name: Facturas
+    description: Operaciones relacionadas con facturas
+
+paths:
+  /proveedores:
+    get:
+      tags:
+        - Proveedores
+      summary: Listar todos los proveedores
+      description: Obtiene una lista paginada de todos los proveedores registrados
+      operationId: listarProveedores
+      parameters:
+        - name: page
+          in: query
+          description: Número de página (comienza en 0)
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: size
+          in: query
+          description: Cantidad de elementos por página
+          required: false
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+        - name: activo
+          in: query
+          description: Filtrar por estado activo
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Lista de proveedores obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Proveedor"
+                  totalElements:
+                    type: integer
+                    example: 30
+                  totalPages:
+                    type: integer
+                    example: 3
+                  currentPage:
+                    type: integer
+                    example: 0
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    post:
+      tags:
+        - Proveedores
+      summary: Registrar un nuevo proveedor
+      description: Crea un nuevo proveedor en el sistema
+      operationId: crearProveedor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProveedorInput"
+      responses:
+        "201":
+          description: Proveedor creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Proveedor"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /proveedores/{id}:
+    get:
+      tags:
+        - Proveedores
+      summary: Obtener un proveedor por ID
+      description: Retorna los detalles de un proveedor específico
+      operationId: obtenerProveedorPorId
+      parameters:
+        - name: id
+          in: path
+          description: ID único del proveedor
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 1
+      responses:
+        "200":
+          description: Proveedor encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Proveedor"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    put:
+      tags:
+        - Proveedores
+      summary: Actualizar un proveedor
+      description: Actualiza la información de un proveedor existente
+      operationId: actualizarProveedor
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProveedorInput"
+      responses:
+        "200":
+          description: Proveedor actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Proveedor"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    delete:
+      tags:
+        - Proveedores
+      summary: Eliminar un proveedor
+      description: Elimina un proveedor del sistema (soft delete)
+      operationId: eliminarProveedor
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "204":
+          description: Proveedor eliminado exitosamente
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: No se puede eliminar - tiene facturas asociadas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /facturas:
+    get:
+      tags:
+        - Facturas
+      summary: Listar todas las facturas
+      description: Obtiene una lista paginada de todas las facturas del sistema
+      operationId: listarFacturas
+      parameters:
+        - name: proveedorId
+          in: query
+          description: Filtrar por ID de proveedor
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: estado
+          in: query
+          description: Filtrar por estado de la factura
+          required: false
+          schema:
+            type: string
+            enum: [EMITIDA, PAGADA, VENCIDA, CANCELADA]
+        - name: fechaInicio
+          in: query
+          description: Fecha de inicio para filtrado (formato YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: fechaFin
+          in: query
+          description: Fecha de fin para filtrado (formato YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Lista de facturas obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Factura"
+                  totalElements:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  currentPage:
+                    type: integer
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    post:
+      tags:
+        - Facturas
+      summary: Registrar una nueva factura
+      description: Crea una nueva factura asociada a un proveedor
+      operationId: crearFactura
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FacturaInput"
+      responses:
+        "201":
+          description: Factura creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Factura"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          description: Proveedor no encontrado
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /facturas/{id}:
+    get:
+      tags:
+        - Facturas
+      summary: Obtener una factura por ID
+      description: Retorna los detalles de una factura específica
+      operationId: obtenerFacturaPorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Factura encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Factura"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    put:
+      tags:
+        - Facturas
+      summary: Actualizar una factura
+      description: Actualiza el estado o detalles de una factura
+      operationId: actualizarFactura
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FacturaInput"
+      responses:
+        "200":
+          description: Factura actualizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Factura"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /facturas/{id}/calcular-total:
+    get:
+      tags:
+        - Facturas
+      summary: Calcular total de la factura
+      description: Utiliza el componente C para calcular el total de la factura con impuestos
+      operationId: calcularTotalFactura
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Total calculado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  facturaId:
+                    type: integer
+                    format: int64
+                  subtotal:
+                    type: number
+                    format: double
+                    example: 2000.00
+                  impuestos:
+                    type: number
+                    format: double
+                    example: 240.00
+                  descuentos:
+                    type: number
+                    format: double
+                    example: 100.00
+                  total:
+                    type: number
+                    format: double
+                    example: 2140.00
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /facturas/{id}/pagar:
+    post:
+      tags:
+        - Facturas
+      summary: Registrar pago de factura
+      description: Marca una factura como pagada y registra la información del pago
+      operationId: pagarFactura
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fechaPago
+                - metodoPago
+              properties:
+                fechaPago:
+                  type: string
+                  format: date
+                  example: "2024-11-04"
+                metodoPago:
+                  type: string
+                  enum: [EFECTIVO, TRANSFERENCIA, CHEQUE, TARJETA]
+                  example: "TRANSFERENCIA"
+                referencia:
+                  type: string
+                  maxLength: 100
+                  example: "REF-20241104-001"
+      responses:
+        "200":
+          description: Pago registrado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Factura"
+        "400":
+          description: La factura ya está pagada o no se puede pagar
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  schemas:
+    Proveedor:
+      type: object
+      required:
+        - id
+        - razonSocial
+        - rfc
+        - email
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Identificador único del proveedor
+          example: 1
+        razonSocial:
+          type: string
+          description: Razón social o nombre de la empresa
+          example: "Distribuidora XYZ S.A."
+          minLength: 3
+          maxLength: 200
+        rfc:
+          type: string
+          description: Registro Federal de Contribuyentes o NIT
+          example: "ABC123456DEF"
+          pattern: "^[A-Z0-9]+$"
+          minLength: 10
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          description: Correo electrónico del proveedor
+          example: "contacto@distribuidoraxyz.com"
+        telefono:
+          type: string
+          description: Número de teléfono
+          example: "+502 2345-6789"
+        direccion:
+          type: string
+          description: Dirección física del proveedor
+          maxLength: 255
+        contactoNombre:
+          type: string
+          description: Nombre del contacto principal
+          example: "María García"
+          maxLength: 100
+        codigoUnico:
+          type: string
+          description: Código único generado por el componente C
+          example: "PROV-20241104-001"
+        categoriaProductos:
+          type: string
+          description: Categoría principal de productos que suministra
+          example: "Electrónicos"
+          maxLength: 100
+        fechaRegistro:
+          type: string
+          format: date-time
+          description: Fecha y hora de registro
+          example: "2024-11-04T10:30:00Z"
+        activo:
+          type: boolean
+          description: Indica si el proveedor está activo
+          default: true
+
+    ProveedorInput:
+      type: object
+      required:
+        - razonSocial
+        - rfc
+        - email
+      properties:
+        razonSocial:
+          type: string
+          minLength: 3
+          maxLength: 200
+          example: "Distribuidora XYZ S.A."
+        rfc:
+          type: string
+          pattern: "^[A-Z0-9]+$"
+          minLength: 10
+          maxLength: 20
+          example: "ABC123456DEF"
+        email:
+          type: string
+          format: email
+          example: "contacto@distribuidoraxyz.com"
+        telefono:
+          type: string
+          example: "+502 2345-6789"
+        direccion:
+          type: string
+          maxLength: 255
+        contactoNombre:
+          type: string
+          maxLength: 100
+          example: "María García"
+        categoriaProductos:
+          type: string
+          maxLength: 100
+          example: "Electrónicos"
+
+    Factura:
+      type: object
+      required:
+        - id
+        - proveedorId
+        - numeroFactura
+        - fechaEmision
+        - estado
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        proveedorId:
+          type: integer
+          format: int64
+          description: ID del proveedor que emitió la factura
+          example: 1
+        proveedorRazonSocial:
+          type: string
+          description: Razón social del proveedor (para consultas)
+          example: "Distribuidora XYZ S.A."
+        numeroFactura:
+          type: string
+          description: Número único de la factura
+          example: "FAC-2024-0001"
+          maxLength: 50
+        codigoFactura:
+          type: string
+          description: Código único generado por componente C
+          example: "FACT-20241104-001"
+        fechaEmision:
+          type: string
+          format: date
+          description: Fecha de emisión de la factura
+          example: "2024-11-04"
+        fechaVencimiento:
+          type: string
+          format: date
+          description: Fecha de vencimiento para pago
+          example: "2024-12-04"
+        fechaPago:
+          type: string
+          format: date
+          description: Fecha en que se realizó el pago (si aplica)
+          example: "2024-11-10"
+        estado:
+          type: string
+          enum: [EMITIDA, PAGADA, VENCIDA, CANCELADA]
+          example: "EMITIDA"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ItemFactura"
+        subtotal:
+          type: number
+          format: double
+          description: Subtotal sin impuestos
+          example: 2000.00
+        impuestos:
+          type: number
+          format: double
+          description: Total de impuestos
+          example: 240.00
+        descuentos:
+          type: number
+          format: double
+          description: Total de descuentos aplicados
+          example: 100.00
+        total:
+          type: number
+          format: double
+          description: Total a pagar
+          example: 2140.00
+        metodoPago:
+          type: string
+          enum: [EFECTIVO, TRANSFERENCIA, CHEQUE, TARJETA]
+          example: "TRANSFERENCIA"
+        referenciaPago:
+          type: string
+          description: Referencia del pago realizado
+          maxLength: 100
+        observaciones:
+          type: string
+          maxLength: 500
+
+    FacturaInput:
+      type: object
+      required:
+        - proveedorId
+        - numeroFactura
+        - fechaEmision
+        - fechaVencimiento
+        - items
+      properties:
+        proveedorId:
+          type: integer
+          format: int64
+          example: 1
+        numeroFactura:
+          type: string
+          maxLength: 50
+          example: "FAC-2024-0001"
+        fechaEmision:
+          type: string
+          format: date
+          example: "2024-11-04"
+        fechaVencimiento:
+          type: string
+          format: date
+          example: "2024-12-04"
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/ItemFacturaInput"
+        descuentos:
+          type: number
+          format: double
+          minimum: 0
+          example: 100.00
+        observaciones:
+          type: string
+          maxLength: 500
+
+    ItemFactura:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        descripcion:
+          type: string
+          description: Descripción del producto o servicio
+          example: "Monitor LED 24 pulgadas"
+        cantidad:
+          type: integer
+          minimum: 1
+          example: 5
+        precioUnitario:
+          type: number
+          format: double
+          example: 400.00
+        subtotal:
+          type: number
+          format: double
+          example: 2000.00
+
+    ItemFacturaInput:
+      type: object
+      required:
+        - descripcion
+        - cantidad
+        - precioUnitario
+      properties:
+        descripcion:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: "Monitor LED 24 pulgadas"
+        cantidad:
+          type: integer
+          minimum: 1
+          example: 5
+        precioUnitario:
+          type: number
+          format: double
+          minimum: 0.01
+          example: 400.00
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-11-04T10:30:00Z"
+        status:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: "Bad Request"
+        message:
+          type: string
+          example: "El RFC del proveedor ya existe"
+        path:
+          type: string
+          example: "/api/v1/proveedores"
+
+  responses:
+    BadRequest:
+      description: Solicitud inválida
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            timestamp: "2024-11-04T10:30:00Z"
+            status: 400
+            error: "Bad Request"
+            message: "Datos de entrada inválidos"
+            path: "/api/v1/proveedores"
+
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            timestamp: "2024-11-04T10:30:00Z"
+            status: 404
+            error: "Not Found"
+            message: "Proveedor no encontrado con ID: 999"
+            path: "/api/v1/proveedores/999"
+
+    InternalServerError:
+      description: Error interno del servidor
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            timestamp: "2024-11-04T10:30:00Z"
+            status: 500
+            error: "Internal Server Error"
+            message: "Error al procesar la solicitud"
+            path: "/api/v1/proveedores"
