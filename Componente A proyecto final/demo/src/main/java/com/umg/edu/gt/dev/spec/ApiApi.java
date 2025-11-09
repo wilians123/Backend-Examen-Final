@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Optional;
 import jakarta.annotation.Generated;
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-11-08T19:12:21.095389900-06:00[America/Guatemala]")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-11-08T23:39:27.831609400-06:00[America/Guatemala]")
 @Validated
 @Tag(name = "api", description = "the api API")
 @RequestMapping("${openapi.aPIComponenteAClientesYPedidos.base-path:}")

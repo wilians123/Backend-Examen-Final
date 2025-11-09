@@ -19,7 +19,7 @@ import jakarta.annotation.Generated;
  * ItemPedidoInput
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-11-08T19:12:21.095389900-06:00[America/Guatemala]")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-11-08T23:39:27.831609400-06:00[America/Guatemala]")
 public class ItemPedidoInput implements Serializable {
 
   private static final long serialVersionUID = 1L;
