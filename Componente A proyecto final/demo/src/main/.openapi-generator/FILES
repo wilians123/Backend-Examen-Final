@@ -1,0 +1,10 @@
+README.md
+java/com/umg/edu/gt/dev/model/Cliente.java
+java/com/umg/edu/gt/dev/model/ClienteInput.java
+java/com/umg/edu/gt/dev/model/ItemPedido.java
+java/com/umg/edu/gt/dev/model/ItemPedidoInput.java
+java/com/umg/edu/gt/dev/model/Pedido.java
+java/com/umg/edu/gt/dev/model/PedidoInput.java
+java/com/umg/edu/gt/dev/spec/ApiApi.java
+java/com/umg/edu/gt/dev/spec/ApiUtil.java
+pom.xml
