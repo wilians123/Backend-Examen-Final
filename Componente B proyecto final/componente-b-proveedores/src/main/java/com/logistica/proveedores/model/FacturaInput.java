@@ -24,7 +24,7 @@ import jakarta.annotation.Generated;
  * FacturaInput
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-11-09T15:19:51.115170100-06:00[America/Guatemala]")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-11-09T15:32:00.964758700-06:00[America/Guatemala]")
 public class FacturaInput implements Serializable {
 
   private static final long serialVersionUID = 1L;

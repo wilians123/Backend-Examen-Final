@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Optional;
 import jakarta.annotation.Generated;
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-11-09T15:19:51.115170100-06:00[America/Guatemala]")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-11-09T15:32:00.964758700-06:00[America/Guatemala]")
 @Validated
 @Tag(name = "proveedores", description = "Operaciones relacionadas con proveedores")
 @RequestMapping("${openapi.aPIDeGestinDeProveedoresYFacturas.base-path:/api/v1}")
