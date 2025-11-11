@@ -24,7 +24,7 @@ import jakarta.annotation.Generated;
  */
 
 @JsonTypeName("listarFacturas_200_response")
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-11-09T15:32:00.964758700-06:00[America/Guatemala]")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-11-10T14:44:36.607023700-06:00[America/Guatemala]")
 public class ListarFacturas200Response implements Serializable {
 
   private static final long serialVersionUID = 1L;
