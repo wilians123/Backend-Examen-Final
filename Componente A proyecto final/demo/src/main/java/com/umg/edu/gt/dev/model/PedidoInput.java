@@ -22,7 +22,7 @@ import jakarta.annotation.Generated;
  * PedidoInput
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-11-08T23:39:27.831609400-06:00[America/Guatemala]")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-11-11T15:47:53.306505300-06:00[America/Guatemala]")
 public class PedidoInput implements Serializable {
 
   private static final long serialVersionUID = 1L;
