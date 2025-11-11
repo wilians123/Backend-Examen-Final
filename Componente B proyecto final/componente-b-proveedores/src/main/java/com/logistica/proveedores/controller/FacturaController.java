@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
 /**
  * Controlador REST para gestión de Facturas
  * Implementa la interfaz generada por OpenAPI
@@ -152,6 +155,30 @@ public class FacturaController implements FacturasApi {
                 return ResponseEntity.notFound().build();
             }
             return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    /**
+     * INTEGRACIÓN CIRCULAR: Consultar pedido del Componente A
+     * Endpoint: GET /api/v1/facturas/consultar-pedido/{pedidoId}
+     * 
+     * Este endpoint demuestra la integración circular:
+     * Componente B → Componente C (IntegradorAPI) → Componente A
+     */
+    @GetMapping("/facturas/consultar-pedido/{pedidoId}")
+    public ResponseEntity<String> consultarPedidoComponenteA(
+            @PathVariable Long pedidoId) {
+        try {
+            logger.info("🔄 INTEGRACIÓN CIRCULAR: Consultando pedido {} desde Componente A", 
+                       pedidoId);
+            
+            String pedidoJson = facturaService.consultarPedidoComponenteA(pedidoId);
+            
+            return ResponseEntity.ok(pedidoJson);
+        } catch (Exception e) {
+            logger.error("❌ Error en integración circular: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body("{\"error\": \"" + e.getMessage() + "\"}");
         }
     }
 }

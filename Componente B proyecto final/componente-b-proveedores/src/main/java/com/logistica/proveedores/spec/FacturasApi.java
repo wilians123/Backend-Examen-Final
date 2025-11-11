@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Optional;
 import jakarta.annotation.Generated;
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-11-10T14:44:36.607023700-06:00[America/Guatemala]")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-11-11T15:47:56.817647-06:00[America/Guatemala]")
 @Validated
 @Tag(name = "facturas", description = "Operaciones relacionadas con facturas")
 @RequestMapping("${openapi.aPIDeGestinDeProveedoresYFacturas.base-path:/api/v1}")
