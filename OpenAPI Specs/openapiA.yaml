@@ -1,0 +1,612 @@
+openapi: 3.0.3
+info:
+  title: API de Gestión de Clientes y Pedidos
+  description: |
+    API REST para el componente A del sistema de logística.
+    Maneja la administración de clientes y sus pedidos utilizando MariaDB.
+  version: 1.0.0
+  contact:
+    name: Equipo de Desarrollo
+    email: soporte@logistica.com
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Servidor de desarrollo local
+
+tags:
+  - name: Clientes
+    description: Operaciones relacionadas con clientes
+  - name: Pedidos
+    description: Operaciones relacionadas con pedidos
+
+paths:
+  /clientes:
+    get:
+      tags:
+        - Clientes
+      summary: Listar todos los clientes
+      description: Obtiene una lista paginada de todos los clientes registrados en el sistema
+      operationId: listarClientes
+      parameters:
+        - name: page
+          in: query
+          description: Número de página (comienza en 0)
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: size
+          in: query
+          description: Cantidad de elementos por página
+          required: false
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: Lista de clientes obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Cliente"
+                  totalElements:
+                    type: integer
+                    example: 50
+                  totalPages:
+                    type: integer
+                    example: 5
+                  currentPage:
+                    type: integer
+                    example: 0
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    post:
+      tags:
+        - Clientes
+      summary: Registrar un nuevo cliente
+      description: Crea un nuevo cliente en el sistema
+      operationId: crearCliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClienteInput"
+      responses:
+        "201":
+          description: Cliente creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cliente"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /clientes/{id}:
+    get:
+      tags:
+        - Clientes
+      summary: Obtener un cliente por ID
+      description: Retorna los detalles de un cliente específico
+      operationId: obtenerClientePorId
+      parameters:
+        - name: id
+          in: path
+          description: ID único del cliente
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 1
+      responses:
+        "200":
+          description: Cliente encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cliente"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    put:
+      tags:
+        - Clientes
+      summary: Actualizar un cliente
+      description: Actualiza la información de un cliente existente
+      operationId: actualizarCliente
+      parameters:
+        - name: id
+          in: path
+          description: ID único del cliente
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClienteInput"
+      responses:
+        "200":
+          description: Cliente actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cliente"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    delete:
+      tags:
+        - Clientes
+      summary: Eliminar un cliente
+      description: Elimina un cliente del sistema (soft delete)
+      operationId: eliminarCliente
+      parameters:
+        - name: id
+          in: path
+          description: ID único del cliente
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "204":
+          description: Cliente eliminado exitosamente
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /pedidos:
+    get:
+      tags:
+        - Pedidos
+      summary: Listar todos los pedidos
+      description: Obtiene una lista paginada de todos los pedidos del sistema
+      operationId: listarPedidos
+      parameters:
+        - name: clienteId
+          in: query
+          description: Filtrar por ID de cliente
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: estado
+          in: query
+          description: Filtrar por estado del pedido
+          required: false
+          schema:
+            type: string
+            enum: [PENDIENTE, EN_PROCESO, COMPLETADO, CANCELADO]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Lista de pedidos obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Pedido"
+                  totalElements:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  currentPage:
+                    type: integer
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    post:
+      tags:
+        - Pedidos
+      summary: Registrar un nuevo pedido
+      description: Crea un nuevo pedido asociado a un cliente
+      operationId: crearPedido
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PedidoInput"
+      responses:
+        "201":
+          description: Pedido creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pedido"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          description: Cliente no encontrado
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /pedidos/{id}:
+    get:
+      tags:
+        - Pedidos
+      summary: Obtener un pedido por ID
+      description: Retorna los detalles de un pedido específico
+      operationId: obtenerPedidoPorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Pedido encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pedido"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    put:
+      tags:
+        - Pedidos
+      summary: Actualizar un pedido
+      description: Actualiza el estado o detalles de un pedido
+      operationId: actualizarPedido
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PedidoInput"
+      responses:
+        "200":
+          description: Pedido actualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pedido"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /pedidos/{id}/calcular-total:
+    get:
+      tags:
+        - Pedidos
+      summary: Calcular total del pedido
+      description: Utiliza el componente C para calcular el total del pedido incluyendo impuestos
+      operationId: calcularTotalPedido
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Total calculado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pedidoId:
+                    type: integer
+                    format: int64
+                  subtotal:
+                    type: number
+                    format: double
+                    example: 1000.00
+                  impuestos:
+                    type: number
+                    format: double
+                    example: 120.00
+                  total:
+                    type: number
+                    format: double
+                    example: 1120.00
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  schemas:
+    Cliente:
+      type: object
+      required:
+        - id
+        - nombre
+        - email
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Identificador único del cliente
+          example: 1
+        nombre:
+          type: string
+          description: Nombre completo del cliente
+          example: "Juan Pérez"
+          minLength: 3
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          description: Correo electrónico del cliente
+          example: "juan.perez@example.com"
+        telefono:
+          type: string
+          description: Número de teléfono
+          example: "+502 1234-5678"
+          pattern: '^\+?[0-9\s\-()]+$'
+        direccion:
+          type: string
+          description: Dirección física del cliente
+          example: "Calle Principal 123, Zona 10"
+          maxLength: 255
+        codigoUnico:
+          type: string
+          description: Código único generado por el componente C
+          example: "CLI-20241104-001"
+        fechaRegistro:
+          type: string
+          format: date-time
+          description: Fecha y hora de registro
+          example: "2024-11-04T10:30:00Z"
+        activo:
+          type: boolean
+          description: Indica si el cliente está activo
+          default: true
+
+    ClienteInput:
+      type: object
+      required:
+        - nombre
+        - email
+      properties:
+        nombre:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: "Juan Pérez"
+        email:
+          type: string
+          format: email
+          example: "juan.perez@example.com"
+        telefono:
+          type: string
+          example: "+502 1234-5678"
+        direccion:
+          type: string
+          maxLength: 255
+          example: "Calle Principal 123, Zona 10"
+
+    Pedido:
+      type: object
+      required:
+        - id
+        - clienteId
+        - fechaPedido
+        - estado
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        clienteId:
+          type: integer
+          format: int64
+          description: ID del cliente que realizó el pedido
+          example: 1
+        clienteNombre:
+          type: string
+          description: Nombre del cliente (para consultas)
+          example: "Juan Pérez"
+        codigoPedido:
+          type: string
+          description: Código único del pedido generado por componente C
+          example: "PED-20241104-001"
+        fechaPedido:
+          type: string
+          format: date-time
+          example: "2024-11-04T10:30:00Z"
+        fechaEntregaEstimada:
+          type: string
+          format: date
+          example: "2024-11-10"
+        estado:
+          type: string
+          enum: [PENDIENTE, EN_PROCESO, COMPLETADO, CANCELADO]
+          example: "PENDIENTE"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ItemPedido"
+        subtotal:
+          type: number
+          format: double
+          example: 1000.00
+        impuestos:
+          type: number
+          format: double
+          example: 120.00
+        total:
+          type: number
+          format: double
+          example: 1120.00
+        observaciones:
+          type: string
+          maxLength: 500
+
+    PedidoInput:
+      type: object
+      required:
+        - clienteId
+        - items
+      properties:
+        clienteId:
+          type: integer
+          format: int64
+          example: 1
+        fechaEntregaEstimada:
+          type: string
+          format: date
+          example: "2024-11-10"
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/ItemPedidoInput"
+        observaciones:
+          type: string
+          maxLength: 500
+
+    ItemPedido:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        productoNombre:
+          type: string
+          example: "Laptop HP"
+        cantidad:
+          type: integer
+          minimum: 1
+          example: 2
+        precioUnitario:
+          type: number
+          format: double
+          example: 500.00
+        subtotal:
+          type: number
+          format: double
+          example: 1000.00
+
+    ItemPedidoInput:
+      type: object
+      required:
+        - productoNombre
+        - cantidad
+        - precioUnitario
+      properties:
+        productoNombre:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "Laptop HP"
+        cantidad:
+          type: integer
+          minimum: 1
+          example: 2
+        precioUnitario:
+          type: number
+          format: double
+          minimum: 0.01
+          example: 500.00
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-11-04T10:30:00Z"
+        status:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: "Bad Request"
+        message:
+          type: string
+          example: "El email del cliente ya existe"
+        path:
+          type: string
+          example: "/api/v1/clientes"
+
+  responses:
+    BadRequest:
+      description: Solicitud inválida
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            timestamp: "2024-11-04T10:30:00Z"
+            status: 400
+            error: "Bad Request"
+            message: "Datos de entrada inválidos"
+            path: "/api/v1/clientes"
+
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            timestamp: "2024-11-04T10:30:00Z"
+            status: 404
+            error: "Not Found"
+            message: "Cliente no encontrado con ID: 999"
+            path: "/api/v1/clientes/999"
+
+    InternalServerError:
+      description: Error interno del servidor
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            timestamp: "2024-11-04T10:30:00Z"
+            status: 500
+            error: "Internal Server Error"
+            message: "Error al procesar la solicitud"
+            path: "/api/v1/clientes"
